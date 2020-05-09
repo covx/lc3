@@ -16,3 +16,8 @@ const (
 
 // 65536 locations
 var Reg [R_COUNT]uint16
+
+const (
+	MR_KBSR uint16 = 0xFE00 // keyboard status
+	MR_KBDR uint16 = 0xFE02 // keyboard data
+)

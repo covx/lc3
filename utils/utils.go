@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
+	keyboard "github.com/eiannone/keyboard"
 	"lc3/conditions"
 	"lc3/memory"
 	"lc3/registers"
@@ -68,14 +69,49 @@ func ReadImageFileToMemory(path string) {
 	log.Printf("Header has been read: 0x%x", header)
 
 	bufferLen := buffer.Len()
+	origin := header
+
 	for i := 0; i < bufferLen; i++ {
 		b := buffer.Next(2)
 		if len(b) == 0 {
 			break
 		}
-		memory.Memory[i] = binary.BigEndian.Uint16(b)
+		memory.Memory[origin] = binary.BigEndian.Uint16(b)
+		origin++
 	}
 	log.Printf("Program has been read into memory, contains %d bytes, %d words", bufferLen, bufferLen/2)
+}
+
+func memoryWrite(address uint16, val uint16) {
+	memory.Memory[address] = val
+}
+
+func KeyboardRead() uint16 {
+	var keyPressed uint16 = 0x0
+
+	symb, controlKey, err := keyboard.GetSingleKey()
+	keyPressed = uint16(symb)
+
+	log.Printf("Key pressed, symbol=%v, controlKey=%v", symb, controlKey)
+
+	if err != nil {
+		log.Printf("Error, %s", err)
+	}
+	return keyPressed
+}
+
+func MemoryRead(address uint16) uint16 {
+	if address == registers.MR_KBSR {
+		checkKey := KeyboardRead()
+
+		if checkKey != 0 {
+			memory.Memory[registers.MR_KBSR] = 1 << 15
+			memory.Memory[registers.MR_KBDR] = checkKey
+		} else {
+			memory.Memory[registers.MR_KBSR] = 0
+		}
+	}
+	return memory.Memory[address]
 }
 
 // nativeEndian is the byte order for the local platform. Used to send back and

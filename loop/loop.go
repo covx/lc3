@@ -1,13 +1,14 @@
-package main
+package loop
 
 import (
 	"fmt"
 	"lc3/instructions"
 	"lc3/opcodes"
 	"lc3/registers"
+	"lc3/utils"
 )
 
-func loop() {
+func Loop() {
 
 	// set the PC to starting position
 	// 0x3000 is the default
@@ -17,16 +18,20 @@ func loop() {
 
 	registers.Reg[registers.R_PC] = PC_START
 
-	for {
-		var insruction uint16
-		var operation uint16
+	//var operation uint16
 
-		//insruction += memory.MemoryRead(registers.Reg[registers.R_PC])
-		operation = insruction >> 12
+	var currentRegister uint16 = registers.Reg[registers.R_PC]
+
+	for {
+
+		instruction := utils.MemoryRead(currentRegister)
+		operation := instruction >> 12
+		currentRegister++
 
 		switch operation {
 		case opcodes.OP_ADD:
-			instructions.Add(insruction)
+			instructions.Add(instruction)
+			fmt.Println("============")
 			break
 			//case opcodes.OP_AND:
 			//	{AND, 7}
