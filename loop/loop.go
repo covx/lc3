@@ -5,7 +5,9 @@ import (
 	"lc3/instructions"
 	"lc3/opcodes"
 	"lc3/registers"
+	"lc3/system_calls"
 	"lc3/utils"
+	"log"
 )
 
 func Loop() {
@@ -18,67 +20,62 @@ func Loop() {
 
 	registers.Reg[registers.R_PC] = PC_START
 
-	//var operation uint16
-
-	var currentRegister uint16 = registers.Reg[registers.R_PC]
-
-	for {
-
-		instruction := utils.MemoryRead(currentRegister)
+	for running := 1; running != 0; {
+		instruction := utils.MemoryRead(registers.Reg[registers.R_PC])
 		operation := instruction >> 12
-		currentRegister++
+
+		registers.Reg[registers.R_PC]++
 
 		switch operation {
 		case opcodes.OP_ADD:
 			instructions.Add(instruction)
-			fmt.Println("============")
 			break
-			//case opcodes.OP_AND:
-			//	{AND, 7}
-			//	break
-			//case opcodes.OP_NOT:
-			//	{NOT, 7}
-			//	break
-			//case opcodes.OP_BR:
-			//	{BR, 7}
-			//	break
-			//case opcodes.OP_JMP:
-			//	{JMP, 7}
-			//	break
-			//case opcodes.OP_JSR
-			//	{JSR, 7}
-			//	break
-			//case opcodes.OP_LD
-			//	{LD, 7}
-			//	break
-			//case opcodes.OP_LDI:
-			//	{LDI, 6}
-			//	break
-			//case opcodes.OP_LDR:
-			//	{LDR, 7}
-			//	break
-			//case opcodes.OP_LEA:
-			//	{LEA, 7}
-			//	break
-			//case opcodes.OP_ST:
-			//	{ST, 7}
-			//	break
-			//case opcodes.OP_STI:
-			//	{STI, 7}
-			//	break
-			//case opcodes.OP_STR:
-			//	{STR, 7}
-			//	break
-			//case opcodes.OP_TRAP:
-			//	{TRAP, 8}
-			//	break
-			//case opcodes.OP_RES:
-			//	fallthrough
-			//case opcodes.OP_RTI:
-			//	fallthrough
-			//default:
-			//	{BAD OPCODE, 7}
-			//	break
+		case opcodes.OP_AND:
+			instructions.And(instruction)
+			break
+		case opcodes.OP_NOT:
+			instructions.Not(instruction)
+			break
+		case opcodes.OP_BR:
+			instructions.Branch(instruction)
+			break
+		case opcodes.OP_JMP:
+			instructions.Jump(instruction)
+			break
+		case opcodes.OP_JSR:
+			instructions.JumpRegister(instruction)
+			break
+		case opcodes.OP_LD:
+			instructions.Load(instruction)
+			break
+		case opcodes.OP_LDI:
+			instructions.LoadIndirect(instruction)
+			break
+		case opcodes.OP_LDR:
+			instructions.LoadBaseOffset(instruction)
+			break
+		case opcodes.OP_LEA:
+			instructions.LoadEffectiveAddress(instruction)
+			break
+		case opcodes.OP_ST:
+			instructions.Store(instruction)
+			break
+		case opcodes.OP_STI:
+			instructions.StoreIndirect(instruction)
+			break
+		case opcodes.OP_STR:
+			instructions.StoreBaseOffset(instruction)
+			break
+		case opcodes.OP_TRAP:
+			running = system_calls.SystemCall(instruction)
+			break
+		case opcodes.OP_RES:
+			fallthrough
+		case opcodes.OP_RTI:
+			fallthrough
+		default:
+			log.Printf("invalid opcode=%v", operation)
+			break
 		}
 
 	}

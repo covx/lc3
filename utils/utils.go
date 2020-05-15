@@ -82,7 +82,7 @@ func ReadImageFileToMemory(path string) {
 	log.Printf("Program has been read into memory, contains %d bytes, %d words", bufferLen, bufferLen/2)
 }
 
-func memoryWrite(address uint16, val uint16) {
+func MemoryWrite(address uint16, val uint16) {
 	memory.Memory[address] = val
 }
 
