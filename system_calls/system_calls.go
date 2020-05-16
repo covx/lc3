@@ -2,15 +2,34 @@ package system_calls
 
 import (
 	"fmt"
+	"github.com/eiannone/keyboard"
 	"lc3/memory"
 	"lc3/opcodes"
 	"lc3/registers"
-	"lc3/utils"
+	"log"
+	"os"
 )
+
+func KeyboardRead() uint16 {
+	var keyPressed uint16 = 0x0
+
+	symb, controlKey, err := keyboard.GetSingleKey()
+	keyPressed = uint16(symb)
+
+	if controlKey == keyboard.KeyEsc || controlKey == keyboard.KeyCtrlC {
+		fmt.Println("\n\nPressed escaping")
+		haltComputer()
+	}
+
+	if err != nil {
+		log.Printf("Error, %s", err)
+	}
+	return keyPressed
+}
 
 // Reads a single ASCII char; Trap GETC
 func readCharFromKeyboard() {
-	registers.Reg[registers.R_R0] = utils.KeyboardRead()
+	registers.Reg[registers.R_R0] = KeyboardRead()
 }
 
 // Prints a single character to sdtout
@@ -19,9 +38,9 @@ func outCharToStdout() {
 }
 
 // Halts computer; breaks main loop
-func haltComputer() int {
-	fmt.Println("HALT")
-	return 0
+func haltComputer() {
+	fmt.Println("Computer halting...")
+	os.Exit(0)
 }
 
 // Writes a string of ASCII characters to the console display
@@ -31,7 +50,7 @@ func outStringToStdout() {
 	}
 }
 
-func SystemCall(instruction uint16) int {
+func SystemCall(instruction uint16) {
 
 	switch instruction & 0xff {
 	case opcodes.TRAP_GETC:
@@ -52,7 +71,7 @@ func SystemCall(instruction uint16) int {
 		//{TRAP PUTSP, 9}
 		break
 	case opcodes.TRAP_HALT:
-		return haltComputer()
+		haltComputer()
+		break
 	}
-	return 1
 }

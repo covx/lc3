@@ -71,13 +71,13 @@ func JumpRegister(instruction uint16) {
 	var longPcOffset = utils.SignExtend(instruction&0x7ff, 11)
 	var longFlag = (instruction >> 11) & 0x1
 
+	registers.Reg[registers.R_R7] = registers.Reg[registers.R_PC]
+
 	if longFlag == 1 {
 		registers.Reg[registers.R_PC] += longPcOffset // JSR
 	} else {
 		registers.Reg[registers.R_PC] = registers.Reg[r1] // JSRR
 	}
-
-	registers.Reg[registers.R_PC] = registers.Reg[r1]
 }
 
 func Load(instruction uint16) {

@@ -3,12 +3,15 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
-	keyboard "github.com/eiannone/keyboard"
+	"fmt"
 	"lc3/conditions"
 	"lc3/memory"
 	"lc3/registers"
+	"lc3/system_calls"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"unsafe"
 )
 
@@ -86,23 +89,9 @@ func MemoryWrite(address uint16, val uint16) {
 	memory.Memory[address] = val
 }
 
-func KeyboardRead() uint16 {
-	var keyPressed uint16 = 0x0
-
-	symb, controlKey, err := keyboard.GetSingleKey()
-	keyPressed = uint16(symb)
-
-	log.Printf("Key pressed, symbol=%v, controlKey=%v", symb, controlKey)
-
-	if err != nil {
-		log.Printf("Error, %s", err)
-	}
-	return keyPressed
-}
-
 func MemoryRead(address uint16) uint16 {
 	if address == registers.MR_KBSR {
-		checkKey := KeyboardRead()
+		checkKey := system_calls.KeyboardRead()
 
 		if checkKey != 0 {
 			memory.Memory[registers.MR_KBSR] = 1 << 15
@@ -112,6 +101,19 @@ func MemoryRead(address uint16) uint16 {
 		}
 	}
 	return memory.Memory[address]
+}
+
+// SetupCloseHandler creates a 'listener' on a new goroutine which will notify the
+// program if it receives an interrupt from the OS. We then handle this by calling
+// our clean up procedure and exiting the program.
+func SetupCloseHandler() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("\r- Ctrl+C pressed in Terminal")
+		os.Exit(0)
+	}()
 }
 
 // nativeEndian is the byte order for the local platform. Used to send back and

@@ -20,11 +20,16 @@ func Loop() {
 
 	registers.Reg[registers.R_PC] = PC_START
 
-	for running := 1; running != 0; {
+	utils.SetupCloseHandler()
+
+	for {
 		instruction := utils.MemoryRead(registers.Reg[registers.R_PC])
 		operation := instruction >> 12
 
 		registers.Reg[registers.R_PC]++
+
+		//fmt.Printf("INSTR=%v | OPERATE=%v || ", instruction, operation)
+		//fmt.Printf("R_PC=%v | R_R0=%v \n", registers.Reg[registers.R_PC], registers.Reg[registers.R_R0])
 
 		switch operation {
 		case opcodes.OP_ADD:
@@ -67,7 +72,7 @@ func Loop() {
 			instructions.StoreBaseOffset(instruction)
 			break
 		case opcodes.OP_TRAP:
-			running = system_calls.SystemCall(instruction)
+			system_calls.SystemCall(instruction)
 			break
 		case opcodes.OP_RES:
 			fallthrough
@@ -77,9 +82,5 @@ func Loop() {
 			log.Printf("invalid opcode=%v", operation)
 			break
 		}
-
 	}
-
-	// {Shutdown, 12}
-	fmt.Println("Computer halting...")
 }
