@@ -11,20 +11,17 @@ import (
 )
 
 func KeyboardRead() uint16 {
-	var keyPressed uint16 = 0x0
-
 	symb, controlKey, err := keyboard.GetSingleKey()
-	keyPressed = uint16(symb)
 
 	if controlKey == keyboard.KeyEsc || controlKey == keyboard.KeyCtrlC {
 		fmt.Println("\n\nPressed escaping")
-		haltComputer()
+		haltComputer(0)
 	}
 
 	if err != nil {
 		log.Printf("Error, %s", err)
 	}
-	return keyPressed
+	return uint16(symb)
 }
 
 // Reads a single ASCII char; Trap GETC
@@ -34,13 +31,13 @@ func readCharFromKeyboard() {
 
 // Prints a single character to sdtout
 func outCharToStdout() {
-	fmt.Printf("%c\n", registers.Reg[registers.R_R0])
+	fmt.Printf("%c", registers.Reg[registers.R_R0])
 }
 
 // Halts computer; breaks main loop
-func haltComputer() {
+func haltComputer(code int) {
 	fmt.Println("Computer halting...")
-	os.Exit(0)
+	os.Exit(code)
 }
 
 // Writes a string of ASCII characters to the console display
@@ -71,7 +68,7 @@ func SystemCall(instruction uint16) {
 		//{TRAP PUTSP, 9}
 		break
 	case opcodes.TRAP_HALT:
-		haltComputer()
+		haltComputer(0)
 		break
 	}
 }

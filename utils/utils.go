@@ -3,15 +3,12 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"lc3/conditions"
 	"lc3/memory"
 	"lc3/registers"
 	"lc3/system_calls"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 	"unsafe"
 )
 
@@ -101,19 +98,6 @@ func MemoryRead(address uint16) uint16 {
 		}
 	}
 	return memory.Memory[address]
-}
-
-// SetupCloseHandler creates a 'listener' on a new goroutine which will notify the
-// program if it receives an interrupt from the OS. We then handle this by calling
-// our clean up procedure and exiting the program.
-func SetupCloseHandler() {
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		fmt.Println("\r- Ctrl+C pressed in Terminal")
-		os.Exit(0)
-	}()
 }
 
 // nativeEndian is the byte order for the local platform. Used to send back and

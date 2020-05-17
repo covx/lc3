@@ -20,16 +20,13 @@ func Loop() {
 
 	registers.Reg[registers.R_PC] = PC_START
 
-	utils.SetupCloseHandler()
+	fmt.Println()
 
 	for {
 		instruction := utils.MemoryRead(registers.Reg[registers.R_PC])
 		operation := instruction >> 12
 
 		registers.Reg[registers.R_PC]++
-
-		//fmt.Printf("INSTR=%v | OPERATE=%v || ", instruction, operation)
-		//fmt.Printf("R_PC=%v | R_R0=%v \n", registers.Reg[registers.R_PC], registers.Reg[registers.R_R0])
 
 		switch operation {
 		case opcodes.OP_ADD:
