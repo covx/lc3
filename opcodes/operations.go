@@ -18,12 +18,3 @@ const (
 	OP_LEA                // load effective address
 	OP_TRAP               // execute trap
 )
-
-const (
-	TRAP_GETC  uint16 = 0x20 // get character from keyboard
-	TRAP_OUT   uint16 = 0x21 // output a character
-	TRAP_PUTS  uint16 = 0x22 // output a word string
-	TRAP_IN    uint16 = 0x23 // input a string
-	TRAP_PUTSP uint16 = 0x24 // output a byte string
-	TRAP_HALT  uint16 = 0x25 // halt the program
-)

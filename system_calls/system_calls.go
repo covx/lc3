@@ -4,18 +4,27 @@ import (
 	"fmt"
 	"github.com/eiannone/keyboard"
 	"lc3/memory"
-	"lc3/opcodes"
 	"lc3/registers"
 	"log"
 	"os"
 )
 
+const (
+	GETC  uint16 = 0x20 // get character from keyboard
+	OUT   uint16 = 0x21 // output a character
+	PUTS  uint16 = 0x22 // output a word string
+	IN    uint16 = 0x23 // input a string
+	PUTSP uint16 = 0x24 // output a byte string
+	HALT  uint16 = 0x25 // halt the program
+)
+
+// Reads single symbol from keyboard
 func KeyboardRead() uint16 {
 	symb, controlKey, err := keyboard.GetSingleKey()
 
 	if controlKey == keyboard.KeyEsc || controlKey == keyboard.KeyCtrlC {
 		fmt.Println("\n\nPressed escaping")
-		haltComputer(0)
+		haltComputer()
 	}
 
 	if err != nil {
@@ -29,15 +38,15 @@ func readCharFromKeyboard() {
 	registers.Reg[registers.R_R0] = KeyboardRead()
 }
 
-// Prints a single character to sdtout
+// Prints a single character to stdout
 func outCharToStdout() {
 	fmt.Printf("%c", registers.Reg[registers.R_R0])
 }
 
 // Halts computer; breaks main loop
-func haltComputer(code int) {
+func haltComputer() {
 	fmt.Println("Computer halting...")
-	os.Exit(code)
+	os.Exit(0)
 }
 
 // Writes a string of ASCII characters to the console display
@@ -47,28 +56,38 @@ func outStringToStdout() {
 	}
 }
 
-func SystemCall(instruction uint16) {
+// Prints a prompt on the screen and
+//reads a single character from the keyboard
+func printPromtAndRead() {
+	fmt.Printf("Enter a character: ")
+	symb := KeyboardRead()
+	fmt.Printf("%c", symb)
+	registers.Reg[registers.R_R0] = symb
+}
 
-	switch instruction & 0xff {
-	case opcodes.TRAP_GETC:
-		readCharFromKeyboard()
-		break
-	case opcodes.TRAP_OUT:
-		outCharToStdout()
-		break
-	case opcodes.TRAP_PUTS:
-		outStringToStdout()
-		break
-	case opcodes.TRAP_IN:
-		//{TRAP IN, 9}
-		fmt.Println("TRAPIN")
-		break
-	case opcodes.TRAP_PUTSP:
-		fmt.Println("TRAPPUTSP")
-		//{TRAP PUTSP, 9}
-		break
-	case opcodes.TRAP_HALT:
-		haltComputer(0)
-		break
+// Write a string of ASCII characters to the console
+func printStringToConsole() {
+	for address := registers.Reg[registers.R_R0]; memory.Memory[address] != 0x00; address++ {
+		value := memory.Memory[address]
+
+		fmt.Printf("%c", value&0xff)
+
+		symb := value & 0xff >> 8
+		if symb != 0 {
+			fmt.Printf("%c", symb)
+		}
 	}
+}
+
+var callMapping = map[uint16]func(){
+	GETC:  readCharFromKeyboard,
+	OUT:   outCharToStdout,
+	PUTS:  outStringToStdout,
+	IN:    printPromtAndRead,
+	PUTSP: printStringToConsole,
+	HALT:  haltComputer,
+}
+
+func SystemCall(instruction uint16) {
+	callMapping[instruction&0xff]()
 }
