@@ -3,9 +3,10 @@ package instructions
 import (
 	"lc3/registers"
 	"lc3/utils"
+	"log"
 )
 
-func Add(instruction uint16) {
+func add(instruction uint16) {
 	// destination register (DR)
 	var r0 = (instruction >> 9) & 0x7
 
@@ -25,7 +26,7 @@ func Add(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
-func And(instruction uint16) {
+func and(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var r1 = (instruction >> 6) & 0x7
 	var immFlag = (instruction >> 5) & 0x1
@@ -41,7 +42,7 @@ func And(instruction uint16) {
 
 }
 
-func Not(instruction uint16) {
+func not(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var r1 = (instruction >> 6) & 0x7
 
@@ -49,7 +50,7 @@ func Not(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
-func Branch(instruction uint16) {
+func branch(instruction uint16) {
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 	var conditionFlag = (instruction >> 9) & 0x7
 
@@ -59,14 +60,14 @@ func Branch(instruction uint16) {
 
 }
 
-func Jump(instruction uint16) {
+func jump(instruction uint16) {
 	// Also handles RET
 	var r1 = (instruction >> 6) & 0x7
 
 	registers.Reg[registers.R_PC] = registers.Reg[r1]
 }
 
-func JumpRegister(instruction uint16) {
+func jumpRegister(instruction uint16) {
 	var r1 = (instruction >> 6) & 0x7
 	var longPcOffset = utils.SignExtend(instruction&0x7ff, 11)
 	var longFlag = (instruction >> 11) & 0x1
@@ -80,7 +81,7 @@ func JumpRegister(instruction uint16) {
 	}
 }
 
-func Load(instruction uint16) {
+func load(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 
@@ -89,7 +90,7 @@ func Load(instruction uint16) {
 
 }
 
-func LoadIndirect(instruction uint16) {
+func loadIndirect(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 
@@ -98,7 +99,7 @@ func LoadIndirect(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
-func LoadBaseOffset(instruction uint16) {
+func loadBaseOffset(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var r1 = (instruction >> 6) & 0x7
 
@@ -108,7 +109,7 @@ func LoadBaseOffset(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
-func LoadEffectiveAddress(instruction uint16) {
+func loadEffectiveAddress(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 
@@ -116,24 +117,28 @@ func LoadEffectiveAddress(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
-func Store(instruction uint16) {
+func store(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 
 	utils.MemoryWrite(registers.Reg[registers.R_PC]+pcOffset, registers.Reg[r0])
 }
 
-func StoreIndirect(instruction uint16) {
+func storeIndirect(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var pcOffset = utils.SignExtend(instruction&0x1ff, 9)
 
 	utils.MemoryWrite(utils.MemoryRead(registers.Reg[registers.R_PC]+pcOffset), registers.Reg[r0])
 }
 
-func StoreBaseOffset(instruction uint16) {
+func storeBaseOffset(instruction uint16) {
 	var r0 = (instruction >> 9) & 0x7
 	var r1 = (instruction >> 6) & 0x7
 	var offset = utils.SignExtend(instruction&0x3f, 6)
 
 	utils.MemoryWrite(registers.Reg[r1]+offset, registers.Reg[r0])
+}
+
+func unusedOpcode(instruction uint16) {
+	log.Printf("invalid insruction=%v", instruction)
 }
