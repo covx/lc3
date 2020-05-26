@@ -5,24 +5,25 @@ import (
 	"lc3/instructions"
 	"lc3/registers"
 	"lc3/utils"
+	"log"
 )
 
 func Loop() {
 
 	// set the PC to starting position
 	// 0x3000 is the default
-	var PC_START uint16 = 0x3000
+	var PCStart uint16 = 0x3000
 
-	fmt.Println("Computer starting...")
+	log.Println("Computer starting...")
 
-	registers.Reg[registers.R_PC] = PC_START
+	registers.Reg[registers.PC] = PCStart
 
 	fmt.Println()
 
 	for {
-		instruction := utils.MemoryRead(registers.Reg[registers.R_PC])
+		instruction := utils.MemoryRead(registers.Reg[registers.PC])
 		opcode := instruction >> 12
-		registers.Reg[registers.R_PC]++
+		registers.Reg[registers.PC]++
 
 		instructions.CallOpcode(opcode, instruction)
 	}

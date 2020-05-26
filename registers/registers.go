@@ -1,23 +1,29 @@
+// Copyright 2020 Maxim Chernyatevich. All rights reserved.
+// Use of this source code is governed by a GPLv3
+// license that can be found in the LICENSE file.
+
+// Package registers implements registers for lc3 emulator
+
 package registers
 
 const (
-	R_R0 uint16 = iota
-	R_R1
-	R_R2
-	R_R3
-	R_R4
-	R_R5
-	R_R6
-	R_R7
-	R_PC // program counter
-	R_COND
-	R_COUNT
+	R0 uint16 = iota
+	R1
+	R2
+	R3
+	R4
+	R5
+	R6
+	R7
+	PC // program counter
+	COND
+	COUNT
 )
 
 // 65536 locations
-var Reg [R_COUNT]uint16
+var Reg [COUNT]uint16
 
 const (
-	MR_KBSR uint16 = 0xFE00 // keyboard status
-	MR_KBDR uint16 = 0xFE02 // keyboard data
+	KBSR uint16 = 0xFE00 // keyboard status
+	KBDR uint16 = 0xFE02 // keyboard data
 )

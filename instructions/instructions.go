@@ -142,8 +142,8 @@ func not(instruction uint16) {
 //
 // BRzp LOOP ; Branch to LOOP if the last result was zero or positive.
 func branch(instruction uint16) {
-	if getConditionFlag(instruction)&registers.Reg[registers.R_COND] != 0 {
-		registers.Reg[registers.R_PC] += getPcOffset9(instruction)
+	if getConditionFlag(instruction)&registers.Reg[registers.COND] != 0 {
+		registers.Reg[registers.PC] += getPcOffset9(instruction)
 	}
 
 }
@@ -161,7 +161,7 @@ func branch(instruction uint16) {
 //
 // JMP R2 ; PC ← R2
 func jump(instruction uint16) {
-	registers.Reg[registers.R_PC] = registers.Reg[getR1(instruction)]
+	registers.Reg[registers.PC] = registers.Reg[getR1(instruction)]
 }
 
 // jumpRegister implements Jump to Subroutine -- JSR, JSRR;
@@ -188,12 +188,12 @@ func jumpRegister(instruction uint16) {
 	longPcOffset := utils.SignExtend(instruction&0x7ff, 11)
 	longFlag := (instruction >> 11) & 0x1
 
-	registers.Reg[registers.R_R7] = registers.Reg[registers.R_PC]
+	registers.Reg[registers.R7] = registers.Reg[registers.PC]
 
 	if longFlag == 1 {
-		registers.Reg[registers.R_PC] += longPcOffset // JSR
+		registers.Reg[registers.PC] += longPcOffset // JSR
 	} else {
-		registers.Reg[registers.R_PC] = registers.Reg[getR1(instruction)] // JSRR
+		registers.Reg[registers.PC] = registers.Reg[getR1(instruction)] // JSRR
 	}
 }
 
@@ -214,7 +214,7 @@ func jumpRegister(instruction uint16) {
 func load(instruction uint16) {
 	r0 := getR0(instruction)
 
-	registers.Reg[r0] = utils.MemoryRead(registers.Reg[registers.R_PC] + getPcOffset9(instruction))
+	registers.Reg[r0] = utils.MemoryRead(registers.Reg[registers.PC] + getPcOffset9(instruction))
 	utils.UpdateFlags(r0)
 
 }
@@ -238,7 +238,7 @@ func loadIndirect(instruction uint16) {
 
 	// Add pcOffset to the current PC, look at that memory location to get the final address
 	registers.Reg[r0] = utils.MemoryRead(
-		utils.MemoryRead(registers.Reg[registers.R_PC] + getPcOffset9(instruction)))
+		utils.MemoryRead(registers.Reg[registers.PC] + getPcOffset9(instruction)))
 	utils.UpdateFlags(r0)
 }
 
@@ -281,7 +281,7 @@ func loadBaseOffset(instruction uint16) {
 func loadEffectiveAddress(instruction uint16) {
 	r0 := getR0(instruction)
 
-	registers.Reg[r0] = registers.Reg[registers.R_PC] + getPcOffset9(instruction)
+	registers.Reg[r0] = registers.Reg[registers.PC] + getPcOffset9(instruction)
 	utils.UpdateFlags(r0)
 }
 
@@ -300,7 +300,7 @@ func loadEffectiveAddress(instruction uint16) {
 // ST R4, HERE ; mem[HERE] ← R4
 func store(instruction uint16) {
 	utils.MemoryWrite(
-		registers.Reg[registers.R_PC]+getPcOffset9(instruction),
+		registers.Reg[registers.PC]+getPcOffset9(instruction),
 		registers.Reg[getR0(instruction)])
 }
 
@@ -320,7 +320,7 @@ func store(instruction uint16) {
 // STI R4, NOT_HERE ; mem[mem[NOT_HERE]] ← R4
 func storeIndirect(instruction uint16) {
 	utils.MemoryWrite(
-		utils.MemoryRead(registers.Reg[registers.R_PC]+getPcOffset9(instruction)),
+		utils.MemoryRead(registers.Reg[registers.PC]+getPcOffset9(instruction)),
 		registers.Reg[getR0(instruction)])
 }
 

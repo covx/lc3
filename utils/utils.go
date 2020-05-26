@@ -1,3 +1,9 @@
+// Copyright 2020 Maxim Chernyatevich. All rights reserved.
+// Use of this source code is governed by a GPLv3
+// license that can be found in the LICENSE file.
+
+// Package utils implements binary utils for lc3 emulator
+
 package utils
 
 import (
@@ -23,12 +29,12 @@ func SignExtend(number uint16, bitCount int) uint16 {
 
 func UpdateFlags(register uint16) {
 	if registers.Reg[register] == 0 {
-		registers.Reg[registers.R_COND] = conditions.FL_ZRO
+		registers.Reg[registers.COND] = conditions.ZRO
 	} else if (registers.Reg[register] >> 15) == 1 {
 		// a 1 in the left-most bit indicates negative
-		registers.Reg[registers.R_COND] = conditions.FL_NEG
+		registers.Reg[registers.COND] = conditions.NEG
 	} else {
-		registers.Reg[registers.R_COND] = conditions.FL_POS
+		registers.Reg[registers.COND] = conditions.POS
 	}
 }
 
@@ -87,14 +93,14 @@ func MemoryWrite(address uint16, val uint16) {
 }
 
 func MemoryRead(address uint16) uint16 {
-	if address == registers.MR_KBSR {
+	if address == registers.KBSR {
 		checkKey := system_calls.KeyboardRead()
 
 		if checkKey != 0 {
-			memory.Memory[registers.MR_KBSR] = 1 << 15
-			memory.Memory[registers.MR_KBDR] = checkKey
+			memory.Memory[registers.KBSR] = 1 << 15
+			memory.Memory[registers.KBDR] = checkKey
 		} else {
-			memory.Memory[registers.MR_KBSR] = 0
+			memory.Memory[registers.KBSR] = 0
 		}
 	}
 	return memory.Memory[address]
