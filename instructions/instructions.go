@@ -105,6 +105,19 @@ func and(instruction uint16) {
 
 }
 
+// not implements bit-wise Bit-Wise Complement, NOT;
+//
+// Assembler Formats:
+//
+// NOT DR, SR
+//
+// The bit-wise complement of the contents of SR is stored in DR.
+// The condition codes are set, based on whether the binary value produced, taken as a 2’s
+// complement integer, is negative, zero, or positive.
+//
+// Examples:
+//
+// NOT R4, R2 ; R4 ← NOT(R2)
 func not(instruction uint16) {
 	r0 := getR0(instruction)
 
@@ -112,6 +125,22 @@ func not(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
+// branch implements Conditional Branch, BR;
+//
+// Assembler Formats:
+//
+// BRn LABEL BRzp LABEL
+// BRz LABEL BRnp LABEL
+// BRp LABEL BRnz LABEL
+//
+// The condition codes specified by the state of bits [11:9] are tested. If bit [11] is
+// set, N is tested; if bit [11] is clear, N is not tested. If bit [10] is set, Z is tested, etc.
+// If any of the condition codes tested is set, the program branches to the location
+// specified by adding the sign-extended PCoffset9 field to the incremented PC.
+//
+// Examples:
+//
+// BRzp LOOP ; Branch to LOOP if the last result was zero or positive.
 func branch(instruction uint16) {
 	if getConditionFlag(instruction)&registers.Reg[registers.R_COND] != 0 {
 		registers.Reg[registers.R_PC] += getPcOffset9(instruction)
@@ -119,10 +148,42 @@ func branch(instruction uint16) {
 
 }
 
+// jump implements Jump, JMP;
+//
+// Assembler Formats:
+//
+// JMP BaseR
+//
+// The program unconditionally jumps to the location specified by the contents of
+// the base register. Bits [8:6] identify the base register.
+//
+// Examples:
+//
+// JMP R2 ; PC ← R2
 func jump(instruction uint16) {
 	registers.Reg[registers.R_PC] = registers.Reg[getR1(instruction)]
 }
 
+// jumpRegister implements Jump to Subroutine -- JSR, JSRR;
+//
+// Assembler Formats:
+//
+// JSR LABEL
+// JSRR BaseR
+//
+// First, the incremented PC is saved in R7. This is the linkage back to the calling
+// routine. Then the PC is loaded with the address of the first instruction of the
+// subroutine, causing an unconditional jump to that address. The address of the
+// subroutine is obtained from the base register (if bit [11] is 0), or the address is
+// computed by sign-extending bits [10:0] and adding this value to the incremented
+// PC (if bit [11] is 1).
+//
+// Examples:
+//
+// JSR QUEUE ; Put the address of the instruction following JSR into R7;
+//			 ; Jump to QUEUE.
+// JSRR R3   ; Put the address following JSRR into R7; Jump to the
+//			 ; address contained in R3.
 func jumpRegister(instruction uint16) {
 	longPcOffset := utils.SignExtend(instruction&0x7ff, 11)
 	longFlag := (instruction >> 11) & 0x1
@@ -136,6 +197,20 @@ func jumpRegister(instruction uint16) {
 	}
 }
 
+// load implements Load, LD;
+//
+// Assembler Formats:
+//
+// LD DR, LABEL
+//
+// An address is computed by sign-extending bits [8:0] to 16 bits and adding this
+// value to the incremented PC. The contents of memory at this address are loaded
+// into DR. The condition codes are set, based on whether the value loaded is
+// negative, zero, or positive.
+//
+// Examples:
+//
+// LD R4, VALUE ; R4 ← mem[VALUE]
 func load(instruction uint16) {
 	r0 := getR0(instruction)
 
@@ -144,6 +219,20 @@ func load(instruction uint16) {
 
 }
 
+// loadIndirect implements Load Indirect, LDI;
+//
+// Assembler Formats:
+//
+// LDI DR, LABEL
+//
+// An address is computed by sign-extending bits [8:0] to 16 bits and adding this
+// value to the incremented PC. What is stored in memory at this address is the
+// address of the data to be loaded into DR. The condition codes are set, based on
+// whether the value loaded is negative, zero, or positive.
+//
+// Examples:
+//
+// LDI R4, ONEMORE ; R4 ← mem[mem[ONEMORE]]
 func loadIndirect(instruction uint16) {
 	r0 := getR0(instruction)
 
@@ -153,6 +242,20 @@ func loadIndirect(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
+// loadBaseOffset implements Load Base+offset, LDR;
+//
+// Assembler Formats:
+//
+// LDR DR, BaseR, offset6
+//
+// An address is computed by sign-extending bits [5:0] to 16 bits and adding this
+// value to the contents of the register specified by bits [8:6]. The contents of memory
+// at this address are loaded into DR. The condition codes are set, based on whether
+// the value loaded is negative, zero, or positive
+//
+// Examples:
+//
+// LDR R4, R2, #−5 ; R4 ← mem[R2 − 5]
 func loadBaseOffset(instruction uint16) {
 	r0 := getR0(instruction)
 	r1 := getR1(instruction)
@@ -162,6 +265,19 @@ func loadBaseOffset(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
+// loadEffectiveAddress implements Load Effective Address, LEA;
+//
+// Assembler Formats:
+//
+// LEA DR, LABEL
+//
+// An address is computed by sign-extending bits [8:0] to 16 bits and adding this
+// value to the incremented PC. This address is loaded into DR.‡ The condition
+// codes are set, based on whether the value loaded is negative, zero, or positive.
+//
+// Examples:
+//
+// LEA R4, TARGET ; R4 ← address of TARGET.
 func loadEffectiveAddress(instruction uint16) {
 	r0 := getR0(instruction)
 
@@ -169,18 +285,58 @@ func loadEffectiveAddress(instruction uint16) {
 	utils.UpdateFlags(r0)
 }
 
+// store implements Store, ST;
+//
+// Assembler Formats:
+//
+// ST SR, LABEL
+//
+// The contents of the register specified by SR are stored in the memory location
+// whose address is computed by sign-extending bits [8:0] to 16 bits and adding this
+// value to the incremented PC.
+//
+// Examples:
+//
+// ST R4, HERE ; mem[HERE] ← R4
 func store(instruction uint16) {
 	utils.MemoryWrite(
 		registers.Reg[registers.R_PC]+getPcOffset9(instruction),
 		registers.Reg[getR0(instruction)])
 }
 
+// storeIndirect implements Store Indirect, STI;
+//
+// Assembler Formats:
+//
+// STI SR, LABEL
+//
+// The contents of the register specified by SR are stored in the memory location
+// whose address is obtained as follows: Bits [8:0] are sign-extended to 16 bits and
+// added to the incremented PC. What is in memory at this address is the address of
+// the location to which the data in SR is stored.
+//
+// Examples:
+//
+// STI R4, NOT_HERE ; mem[mem[NOT_HERE]] ← R4
 func storeIndirect(instruction uint16) {
 	utils.MemoryWrite(
 		utils.MemoryRead(registers.Reg[registers.R_PC]+getPcOffset9(instruction)),
 		registers.Reg[getR0(instruction)])
 }
 
+// storeBaseOffset implements Store Base+offset, STR;
+//
+// Assembler Formats:
+//
+// STR SR, BaseR, offset6
+//
+// The contents of the register specified by SR are stored in the memory location
+// whose address is computed by sign-extending bits [5:0] to 16 bits and adding this
+// value to the contents of the register specified by bits [8:6].
+//
+// Examples:
+//
+// STR R4, R2, #5 ; mem[R2 + 5] ← R4
 func storeBaseOffset(instruction uint16) {
 	offset := utils.SignExtend(instruction&0x3f, 6)
 
@@ -188,6 +344,7 @@ func storeBaseOffset(instruction uint16) {
 		registers.Reg[getR1(instruction)]+offset, registers.Reg[getR0(instruction)])
 }
 
+// unusedOpcode prints warning into stdout if instruction isn`t valid;
 func unusedOpcode(instruction uint16) {
 	log.Printf("invalid insruction=%v", instruction)
 }
