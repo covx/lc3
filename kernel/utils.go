@@ -2,17 +2,11 @@
 // Use of this source code is governed by a GPLv3
 // license that can be found in the LICENSE file.
 
-// Package utils implements binary utils for lc3 emulator
-
-package utils
+package kernel
 
 import (
 	"bytes"
 	"encoding/binary"
-	"lc3/conditions"
-	"lc3/memory"
-	"lc3/registers"
-	"lc3/system_calls"
 	"log"
 	"os"
 	"unsafe"
@@ -20,21 +14,21 @@ import (
 
 var NativeEndian binary.ByteOrder
 
-func SignExtend(number uint16, bitCount int) uint16 {
+func signExtend(number uint16, bitCount int) uint16 {
 	if (number >> (bitCount - 1) & 1) != 0 {
 		number |= 0xFFFF << bitCount
 	}
 	return number
 }
 
-func UpdateFlags(register uint16) {
-	if registers.Reg[register] == 0 {
-		registers.Reg[registers.COND] = conditions.ZRO
-	} else if (registers.Reg[register] >> 15) == 1 {
+func updateFlags(register uint16) {
+	if Reg[register] == 0 {
+		Reg[COND] = ZRO
+	} else if (Reg[register] >> 15) == 1 {
 		// a 1 in the left-most bit indicates negative
-		registers.Reg[registers.COND] = conditions.NEG
+		Reg[COND] = NEG
 	} else {
-		registers.Reg[registers.COND] = conditions.POS
+		Reg[COND] = POS
 	}
 }
 
@@ -82,28 +76,10 @@ func ReadImageFileToMemory(path string) {
 		if len(b) == 0 {
 			break
 		}
-		memory.Memory[origin] = binary.BigEndian.Uint16(b)
+		memory[origin] = binary.BigEndian.Uint16(b)
 		origin++
 	}
 	log.Printf("Program has been read into memory, contains %d bytes, %d words", bufferLen, bufferLen/2)
-}
-
-func MemoryWrite(address uint16, val uint16) {
-	memory.Memory[address] = val
-}
-
-func MemoryRead(address uint16) uint16 {
-	if address == registers.KBSR {
-		checkKey := system_calls.KeyboardRead()
-
-		if checkKey != 0 {
-			memory.Memory[registers.KBSR] = 1 << 15
-			memory.Memory[registers.KBDR] = checkKey
-		} else {
-			memory.Memory[registers.KBSR] = 0
-		}
-	}
-	return memory.Memory[address]
 }
 
 // nativeEndian is the byte order for the local platform. Used to send back and

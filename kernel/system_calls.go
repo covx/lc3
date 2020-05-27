@@ -2,15 +2,11 @@
 // Use of this source code is governed by a GPLv3
 // license that can be found in the LICENSE file.
 
-// Package system_calls implements TRAP instructions for lc3 emulator
-
-package system_calls
+package kernel
 
 import (
 	"fmt"
 	"github.com/eiannone/keyboard"
-	"lc3/memory"
-	"lc3/registers"
 	"log"
 	"os"
 )
@@ -25,7 +21,7 @@ const (
 )
 
 // Reads single symbol from keyboard
-func KeyboardRead() uint16 {
+func keyboardRead() uint16 {
 	symb, controlKey, err := keyboard.GetSingleKey()
 
 	if controlKey == keyboard.KeyEsc || controlKey == keyboard.KeyCtrlC {
@@ -41,12 +37,12 @@ func KeyboardRead() uint16 {
 
 // Reads a single ASCII char; Trap GETC
 func readCharFromKeyboard() {
-	registers.Reg[registers.R0] = KeyboardRead()
+	Reg[R0] = keyboardRead()
 }
 
 // Prints a single character to stdout
 func outCharToStdout() {
-	fmt.Printf("%c", registers.Reg[registers.R0])
+	fmt.Printf("%c", Reg[R0])
 }
 
 // Halts computer; breaks main loop
@@ -57,8 +53,8 @@ func haltComputer() {
 
 // Writes a string of ASCII characters to the console display
 func outStringToStdout() {
-	for address := registers.Reg[registers.R0]; memory.Memory[address] != 0x00; address++ {
-		fmt.Printf("%c", memory.Memory[address])
+	for address := Reg[R0]; memory[address] != 0x00; address++ {
+		fmt.Printf("%c", memory[address])
 	}
 }
 
@@ -66,15 +62,15 @@ func outStringToStdout() {
 //reads a single character from the keyboard
 func printPromtAndRead() {
 	fmt.Printf("Enter a character: ")
-	symb := KeyboardRead()
+	symb := keyboardRead()
 	fmt.Printf("%c", symb)
-	registers.Reg[registers.R0] = symb
+	Reg[R0] = symb
 }
 
 // Write a string of ASCII characters to the stdout
 func printStringToConsole() {
-	for address := registers.Reg[registers.R0]; memory.Memory[address] != 0x00; address++ {
-		value := memory.Memory[address]
+	for address := Reg[R0]; memory[address] != 0x00; address++ {
+		value := memory[address]
 
 		fmt.Printf("%c", value&0xff)
 
@@ -94,6 +90,6 @@ var callMapping = map[uint16]func(){
 	HALT:  haltComputer,
 }
 
-func SystemCall(instruction uint16) {
+func systemCall(instruction uint16) {
 	callMapping[instruction&0xff]()
 }

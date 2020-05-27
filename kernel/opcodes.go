@@ -2,12 +2,9 @@
 // Use of this source code is governed by a GPLv3
 // license that can be found in the LICENSE file.
 
-// Package memory implements memory for lc3 emulators
-
-package instructions
+package kernel
 
 import (
-	"lc3/system_calls"
 	"log"
 )
 
@@ -46,10 +43,10 @@ var opcodesMapping = map[uint16]func(uint16){
 	JMP:  jump,
 	RES:  unusedOpcode,
 	LEA:  loadEffectiveAddress,
-	TRAP: system_calls.SystemCall,
+	TRAP: systemCall,
 }
 
-func CallOpcode(opcode uint16, instruction uint16) {
+func callOpcode(opcode uint16, instruction uint16) {
 	if f, ok := opcodesMapping[opcode]; ok {
 		f(instruction)
 	} else {

@@ -2,9 +2,7 @@
 // Use of this source code is governed by a GPLv3
 // license that can be found in the LICENSE file.
 
-// Package registers implements registers for lc3 emulator
-
-package registers
+package kernel
 
 const (
 	R0 uint16 = iota

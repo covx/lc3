@@ -1,4 +1,4 @@
-package conditions
+package kernel
 
 const (
 	POS uint16 = 1 << 0 // P

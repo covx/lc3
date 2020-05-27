@@ -8,13 +8,12 @@ package main
 
 import (
 	"flag"
-	"lc3/loop"
-	"lc3/utils"
+	"lc3/kernel"
 )
 
 func main() {
 	imgFilePath := flag.String("image", "empty image", "go -image program.obj")
 	flag.Parse()
-	utils.ReadImageFileToMemory(*imgFilePath)
-	loop.Loop()
+	kernel.ReadImageFileToMemory(*imgFilePath)
+	kernel.Loop()
 }
