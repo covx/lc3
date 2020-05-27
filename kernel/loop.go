@@ -13,14 +13,14 @@ func Loop() {
 
 	log.Println("Computer starting...")
 
-	Reg[PC] = PCStart
+	Register[PC] = PCStart
 
 	fmt.Println()
 
 	for {
-		instruction := memory.Read(Reg[PC])
+		instruction := memory.Read(Register[PC])
 		opcode := instruction >> 12
-		Reg[PC]++
+		Register[PC]++
 
 		callOpcode(opcode, instruction)
 	}

@@ -37,12 +37,12 @@ func keyboardRead() uint16 {
 
 // Reads a single ASCII char; Trap GETC
 func readCharFromKeyboard() {
-	Reg[R0] = keyboardRead()
+	Register[R0] = keyboardRead()
 }
 
 // Prints a single character to stdout
 func outCharToStdout() {
-	fmt.Printf("%c", Reg[R0])
+	fmt.Printf("%c", Register[R0])
 }
 
 // Halts computer; breaks main loop
@@ -53,7 +53,7 @@ func haltComputer() {
 
 // Writes a string of ASCII characters to the console display
 func outStringToStdout() {
-	for address := Reg[R0]; memory[address] != 0x00; address++ {
+	for address := Register[R0]; memory[address] != 0x00; address++ {
 		fmt.Printf("%c", memory[address])
 	}
 }
@@ -64,12 +64,12 @@ func printPromtAndRead() {
 	fmt.Printf("Enter a character: ")
 	symb := keyboardRead()
 	fmt.Printf("%c", symb)
-	Reg[R0] = symb
+	Register[R0] = symb
 }
 
 // Write a string of ASCII characters to the stdout
 func printStringToConsole() {
-	for address := Reg[R0]; memory[address] != 0x00; address++ {
+	for address := Register[R0]; memory[address] != 0x00; address++ {
 		value := memory[address]
 
 		fmt.Printf("%c", value&0xff)

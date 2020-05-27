@@ -19,7 +19,7 @@ const (
 )
 
 // 65536 locations
-var Reg [COUNT]uint16
+var Register [COUNT]uint16
 
 const (
 	KBSR uint16 = 0xFE00 // keyboard status

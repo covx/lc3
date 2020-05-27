@@ -22,13 +22,13 @@ func signExtend(number uint16, bitCount int) uint16 {
 }
 
 func updateFlags(register uint16) {
-	if Reg[register] == 0 {
-		Reg[COND] = ZRO
-	} else if (Reg[register] >> 15) == 1 {
+	if Register[register] == 0 {
+		Register[COND] = ZRO
+	} else if (Register[register] >> 15) == 1 {
 		// a 1 in the left-most bit indicates negative
-		Reg[COND] = NEG
+		Register[COND] = NEG
 	} else {
-		Reg[COND] = POS
+		Register[COND] = POS
 	}
 }
 

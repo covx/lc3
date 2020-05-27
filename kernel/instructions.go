@@ -60,10 +60,10 @@ func add(instruction uint16) {
 
 	if getImmFlag(instruction) == 1 {
 		var imm5 = signExtend(instruction&0x1f, 5)
-		Reg[r0] = Reg[r1] + imm5
+		Register[r0] = Register[r1] + imm5
 	} else {
 		var r2 = instruction & 0x7
-		Reg[r0] = Reg[r1] + Reg[r2]
+		Register[r0] = Register[r1] + Register[r2]
 	}
 	updateFlags(r0)
 }
@@ -92,10 +92,10 @@ func and(instruction uint16) {
 
 	if getImmFlag(instruction) == 1 {
 		var imm5 = signExtend(instruction&0x1f, 5)
-		Reg[r0] = Reg[r1] & imm5
+		Register[r0] = Register[r1] & imm5
 	} else {
 		var r2 = instruction & 0x7
-		Reg[r0] = Reg[r1] & Reg[r2]
+		Register[r0] = Register[r1] & Register[r2]
 	}
 	updateFlags(r0)
 
@@ -117,7 +117,7 @@ func and(instruction uint16) {
 func not(instruction uint16) {
 	r0 := getR0(instruction)
 
-	Reg[getR0(instruction)] = ^Reg[getR1(instruction)]
+	Register[getR0(instruction)] = ^Register[getR1(instruction)]
 	updateFlags(r0)
 }
 
@@ -138,8 +138,8 @@ func not(instruction uint16) {
 //
 // BRzp LOOP ; Branch to LOOP if the last result was zero or positive.
 func branch(instruction uint16) {
-	if getConditionFlag(instruction)&Reg[COND] != 0 {
-		Reg[PC] += getPcOffset9(instruction)
+	if getConditionFlag(instruction)&Register[COND] != 0 {
+		Register[PC] += getPcOffset9(instruction)
 	}
 
 }
@@ -157,7 +157,7 @@ func branch(instruction uint16) {
 //
 // JMP R2 ; PC ← R2
 func jump(instruction uint16) {
-	Reg[PC] = Reg[getR1(instruction)]
+	Register[PC] = Register[getR1(instruction)]
 }
 
 // jumpRegister implements Jump to Subroutine -- JSR, JSRR;
@@ -184,12 +184,12 @@ func jumpRegister(instruction uint16) {
 	longPcOffset := signExtend(instruction&0x7ff, 11)
 	longFlag := (instruction >> 11) & 0x1
 
-	Reg[R7] = Reg[PC]
+	Register[R7] = Register[PC]
 
 	if longFlag == 1 {
-		Reg[PC] += longPcOffset // JSR
+		Register[PC] += longPcOffset // JSR
 	} else {
-		Reg[PC] = Reg[getR1(instruction)] // JSRR
+		Register[PC] = Register[getR1(instruction)] // JSRR
 	}
 }
 
@@ -210,7 +210,7 @@ func jumpRegister(instruction uint16) {
 func load(instruction uint16) {
 	r0 := getR0(instruction)
 
-	Reg[r0] = memory.Read(Reg[PC] + getPcOffset9(instruction))
+	Register[r0] = memory.Read(Register[PC] + getPcOffset9(instruction))
 	updateFlags(r0)
 
 }
@@ -233,8 +233,8 @@ func loadIndirect(instruction uint16) {
 	r0 := getR0(instruction)
 
 	// Add pcOffset to the current PC, look at that memory location to get the final address
-	Reg[r0] = memory.Read(
-		memory.Read(Reg[PC] + getPcOffset9(instruction)))
+	Register[r0] = memory.Read(
+		memory.Read(Register[PC] + getPcOffset9(instruction)))
 	updateFlags(r0)
 }
 
@@ -257,7 +257,7 @@ func loadBaseOffset(instruction uint16) {
 	r1 := getR1(instruction)
 	offset := signExtend(instruction&0x3f, 6)
 
-	Reg[r0] = memory.Read(Reg[r1] + offset)
+	Register[r0] = memory.Read(Register[r1] + offset)
 	updateFlags(r0)
 }
 
@@ -277,7 +277,7 @@ func loadBaseOffset(instruction uint16) {
 func loadEffectiveAddress(instruction uint16) {
 	r0 := getR0(instruction)
 
-	Reg[r0] = Reg[PC] + getPcOffset9(instruction)
+	Register[r0] = Register[PC] + getPcOffset9(instruction)
 	updateFlags(r0)
 }
 
@@ -296,8 +296,8 @@ func loadEffectiveAddress(instruction uint16) {
 // ST R4, HERE ; mem[HERE] ← R4
 func store(instruction uint16) {
 	memory.Write(
-		Reg[PC]+getPcOffset9(instruction),
-		Reg[getR0(instruction)])
+		Register[PC]+getPcOffset9(instruction),
+		Register[getR0(instruction)])
 }
 
 // storeIndirect implements Store Indirect, STI;
@@ -316,8 +316,8 @@ func store(instruction uint16) {
 // STI R4, NOT_HERE ; mem[mem[NOT_HERE]] ← R4
 func storeIndirect(instruction uint16) {
 	memory.Write(
-		memory.Read(Reg[PC]+getPcOffset9(instruction)),
-		Reg[getR0(instruction)])
+		memory.Read(Register[PC]+getPcOffset9(instruction)),
+		Register[getR0(instruction)])
 }
 
 // storeBaseOffset implements Store Base+offset, STR;
@@ -337,7 +337,7 @@ func storeBaseOffset(instruction uint16) {
 	offset := signExtend(instruction&0x3f, 6)
 
 	memory.Write(
-		Reg[getR1(instruction)]+offset, Reg[getR0(instruction)])
+		Register[getR1(instruction)]+offset, Register[getR0(instruction)])
 }
 
 // unusedOpcode prints warning into stdout if instruction isn`t valid;
