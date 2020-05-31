@@ -2,4 +2,5 @@
 *.c
 lc3
 .idea/
+dist/
 main
