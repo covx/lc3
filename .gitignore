@@ -1,6 +1,5 @@
 *.out
 *.c
-*.obj
 lc3
 .idea/
 main
