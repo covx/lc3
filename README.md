@@ -12,13 +12,13 @@ See more:
 ### 2048 Game:
 
 ```
-lc3 -image ./programs/2048.obj
+lc3 -image ./examples/2048.obj
 ```
 
 or
 
 ```bash
-go run main.go -image ./programs/2048.obj
+go run main.go -image ./examples/2048.obj
 ```
 
 Result:
