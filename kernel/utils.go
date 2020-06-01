@@ -32,8 +32,13 @@ func updateFlags(register uint16) {
 	}
 }
 
-func swapToLittleEndian16(data uint16) uint16 {
-	return (data << 8) | (data >> 8)
+func swapToLittleEndian16IfNecessary(word uint16) uint16 {
+	if NativeEndian == binary.BigEndian {
+		return (word << 8) | (word >> 8)
+	} else {
+		return word
+	}
+
 }
 
 func readObjFile(path string) ([]byte, int64) {
@@ -65,7 +70,7 @@ func ReadImageFileToMemory(path string) {
 	data, _ := readObjFile(path)
 
 	buffer := bytes.NewBuffer(data)
-	header = binary.BigEndian.Uint16(buffer.Next(2))
+	header = swapToLittleEndian16IfNecessary(binary.BigEndian.Uint16(buffer.Next(2)))
 	log.Printf("Header has been read: 0x%x", header)
 
 	bufferLen := buffer.Len()
@@ -76,7 +81,7 @@ func ReadImageFileToMemory(path string) {
 		if len(b) == 0 {
 			break
 		}
-		memory[origin] = binary.BigEndian.Uint16(b)
+		memory[origin] = swapToLittleEndian16IfNecessary(binary.BigEndian.Uint16(b))
 		origin++
 	}
 	log.Printf("Program has been read into memory, contains %d bytes, %d words", bufferLen, bufferLen/2)
