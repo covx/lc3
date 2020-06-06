@@ -87,10 +87,10 @@ func ReadImageFileToMemory(path string) {
 	log.Printf("Program has been read into memory, contains %d bytes, %d words", bufferLen, bufferLen/2)
 }
 
-// nativeEndian is the byte order for the local platform. Used to send back and
-// forth Tensors with the C API. We test for endianness at runtime because
-// some architectures can be booted into different endian modes.
-//	https://github.com/tensorflow/tensorflow/blob/master/tensorflow/go/tensor.go
+// NativeEndian is the byte order in the binary word for the local platform.
+// We test for endianness at runtime because
+// some architectures can be booted into different endian modes
+// LC3 computer uses Little Endian
 func init() {
 	buf := [2]byte{}
 	*(*uint16)(unsafe.Pointer(&buf[0])) = uint16(0xABCD)
