@@ -36,7 +36,7 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}_{{ .Tag }}{{ end }}
     # use zip for windows archives
     format_overrides:
       - goos: windows
@@ -50,10 +50,3 @@ changelog:
       - "^test:"
 checksum:
   name_template: 'checksums.txt'
-
-release:
-  footer: >-
-
-    ---
-
-    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
